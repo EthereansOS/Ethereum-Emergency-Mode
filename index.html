@@ -14,16 +14,20 @@
 </head>
 
 <body>
-    <section>
-        <input type="text" onchange="search(this.value)" onkeyup="search(this.value)" onpaste="search(this.value)" oncut="search(this.value)" />
+    <header>
+        <aside>
+            <a class="SOS" href="./">&#128680;</a>
+            <input type="text" placeholder="Search by Smart Contract Address" onchange="search(this.value)" onkeyup="search(this.value)" onpaste="search(this.value)" oncut="search(this.value)" />
+            <a href="javascript:;" class="Validate" onclick="toggleGlobalValidate()">Validate</a>
+        </aside>
+    </header>
+    <section id="validate" class="VALIDATE" style="display: none;">
+        <input type="text" placeholder="Smart Cpntract Address" id="address"/>
+        <input type="file" accept=".sol" onchange="onFileSelection(this)" />
+        <input type="submit" value="Submit" onclick="save(this)" />
     </section>
     <ul id="list">
     </ul>
-    <section>
-        <input type="text" id="address" />
-        <input type="file" accept=".sol" id="file" onchange="onFileSelection(this)" />
-        <input type="submit" value="Submit" onclick="save()" />
-    </section>
 </body>
 
 </html>

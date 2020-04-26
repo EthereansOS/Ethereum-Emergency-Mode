@@ -1,0 +1,22 @@
+html {background-color: #131313;margin: 0;}
+body {width: 100%; position: relative; margin: 0; font-family: 'Courier New', Courier, monospace; padding-top: 60px;}
+header {width: 100%; height: 60px; display: inline-block; margin: 0; position: fixed; top: 0; left: 0; background-color: #0a0a0a; text-align: center;}
+aside {width: 990px; height: 60px; margin: 0 auto; display: inline-block;}
+aside .SOS, .VALIDATE {display: inline-block; text-decoration: none;}
+aside .SOS {font-size: 30px; margin: 15px 20px 0 0;}
+aside .VALIDATE {font-size: 11px; background-color: #a5a5a5; color: #000000; padding: 3px 2px; width: 80px; font-weight: bold; display: inline-block; text-align: center; vertical-align: top; margin: 22px 0 0 15px;}
+aside input {width: 750px; height: 40px; background-color: #131313; border: 1px solid #333333; color: #f1f1f1; border-radius: 2px; display: inline-block; vertical-align: top; margin: 12px 0 0 0; font-size: 16px;}
+ul, li {margin-block-start: 0; margin-block-end: 0; list-style-type: none; padding-inline-start:0;}
+ul {width: 900px; margin: 10px auto 10px auto;}
+li {width: 100%; display: inline-block; margin: 5px 0; text-align: center; padding: 5px 0; border-bottom: 1px solid #0a0a0a;}
+li span {width: 30px; text-align: center; font-size: 16px; display: inline-block; color: #f1f1f1;}
+li p {width: 600px; text-align: center; font-size: 18px; display: inline-block; font-weight: bold; color: #f1f1f1; text-align: left;}
+.YES, .NO, .ETHSCAN {padding: 5px 10px; width: 80px; text-decoration: none; font-size: 13px; font-weight: bold; display: inline-block; text-align: center;}
+.YES {background-color: #00ff2b; color: #000000;}
+.NO {background-color: #ff0000; color: #000000;}
+.ETHSCAN {background-color: #3a3a3a; color: #a5a5a5;}
+.VALIDATE {margin: 0 auto 10px auto; padding: 30px 0; width: 100%; text-align: center; background-color: #000000;}
+.VALIDATE input[type="text"] {width: 400px; display: inline-block; margin: 0 20px; background-color: #131313; border: 1px solid #333333; color: #f1f1f1; height: 30px;}
+.VALIDATE input[type="file"] {width: 200px; display: inline-block; color: #f1f1f1; margin: 0 20px;}
+.VALIDATE input[type="submit"] {width: 80px; background-color: #00ff2b; padding: 5px 10px; display: inline-block; text-decoration: none; font-size: 11px; font-weight: bold; border: none;}
+code {margin: 0 auto 10px auto; padding: 30px 0; width: 100%; text-align: center; background-color: #000000; color: #f1f1f1; text-align: left; display: inline-block; word-wrap: break-word;}
