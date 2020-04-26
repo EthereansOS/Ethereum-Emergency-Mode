@@ -1,6 +1,6 @@
 html {background-color: #131313;margin: 0;}
-body {width: 100%; position: relative; margin: 0; font-family: 'Courier New', Courier, monospace; padding-top: 60px;}
-header {width: 100%; height: 60px; display: inline-block; margin: 0; position: fixed; top: 0; left: 0; background-color: #0a0a0a; text-align: center;}
+body {width: 100%; position: relative; margin: 0; font-family: 'Courier New', Courier, monospace; padding-top: 110px;}
+header {width: 100%; height: 90px; display: inline-block; margin: 0; position: fixed; top: 0; left: 0; background-color: #0a0a0a; text-align: center;}
 aside {width: 990px; height: 60px; margin: 0 auto; display: inline-block;}
 aside .SOS, .VALIDATE {display: inline-block; text-decoration: none;}
 aside .SOS {font-size: 30px; margin: 15px 20px 0 0;}
@@ -30,3 +30,6 @@ code {margin: 0 auto 10px auto; padding: 30px 0; width: 100%; text-align: center
 @keyframes dash {to {stroke-dashoffset: 136;}}
 @-webkit-keyframes rotate {100% {-webkit-transform: rotate(360deg);transform: rotate(360deg);}}
 @keyframes rotate {100% {-webkit-transform: rotate(360deg);transform: rotate(360deg);}}
+div {background-color: #ff00ff; width: 100%; padding: 10px 0; height: 30px; display: inline-block;}
+div p {width: 700px; display: inline-block; margin: 0 auto; font-size: 13px; font-weight: bold; color: #000000;}
+div p a {font-size: 14px; color: #f1f1f1;}
