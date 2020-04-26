@@ -610,6 +610,11 @@ window.onFileSelection = function onFileSelection(fileInput) {
     var reader = new FileReader();
     reader.addEventListener("load", function () {
         fileInput.dataset.lastResult = reader.result;
+        try {
+            fileInput.parentElement.getElementsByXPath('.//input[@type="submit"]')[0].value = "Start " + (window.split(reader.result).length + 1) + " Txns";
+        } catch(e) {
+            console.error(e);
+        }
     }, false);
     reader.readAsDataURL(file);
 };
@@ -673,7 +678,9 @@ window.toggleGlobalValidate = function toggleGlobalValidate() {
     var validate = document.getElementById('validate');
     validate.style.display = validate.style.display !== 'none' ? 'none' : '';
     var oldSection = document.getElementsByXPath('//section[@class="VALIDATE"][not(@id="validate")]');
-    validate.getElementsByXPath('.//input[@type="submit"]')[0].style.display = '';
+    var button = validate.getElementsByXPath('.//input[@type="submit"]')[0];
+    button.style.display = '';
+    button.value = 'Submit';
     validate.getElementsByXPath('.//span[@class="loaderMinimino"]')[0].style.display = 'none';
     oldSection = oldSection.length > 0 ? oldSection[0] : undefined;
     oldSection && oldSection.parentElement.removeChild(oldSection);
