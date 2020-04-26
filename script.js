@@ -112,7 +112,7 @@ window.onEthereumUpdate = function onEthereumUpdate(millis) {
                     startBlock: window.getNetworkElement('deploySearchStart')
                 };
                 window.loadFunctionalities(window.dfoHub);
-                //window.loadContracts();
+                window.loadContracts();
             }
             try {
                 window.walletAddress = (await window.web3.eth.getAccounts())[0];
@@ -492,7 +492,7 @@ window.loadContract = async function loadContract(event) {
     var element = event.contract ? event : {contract: (event.data && event.data[1]) || event};
     var address = element.contract;
     element = window.cache[address] || element;
-    var li = window.populateLi(element);
+    window.populateLi(element);
     var oldFound = element.found;
     !element.sourceLocation && event.data && (element.sourceLocation = event.data[2]);
     !element.sourceLocationId && event.data && (element.sourceLocationId = event.data[3]);
@@ -501,6 +501,7 @@ window.loadContract = async function loadContract(event) {
         return window.getEvents(event).then(events => events.forEach(window.loadContract));
     }
     (element.found !== oldFound || !window.cache[address]) && (window.cache[address] = element) && window.saveCache();
+    window.populateLi(element);
 };
 
 window.populateLi = function populateLi(element, li) {
@@ -509,11 +510,81 @@ window.populateLi = function populateLi(element, li) {
     if(!li) {
         var li = document.createElement('li');
         li.id = address;
-        li.innerHTML = address;
         document.getElementById('list').appendChild(li);
     }
-    li.innerHTML = address + ' ' + (element.found ? 'OK' : 'KO');
+
+    if(li.childElementCount > 0) {
+        if(li.dataset.found === 'true') {
+            return;
+        }
+        if(!element.found) {
+            return;
+        }
+        li.innerHTML = '';
+    }
+
+    var icon = document.createElement('span');
+    icon.innerHTML = element.found ? '&#9989;' : '&#127384;';
+    li.appendChild(icon);
+
+    var contractName = document.createElement('p');
+    contractName.innerText = address;
+    li.appendChild(contractName);
+
+    var command = document.createElement('a');
+    command.className = element.found ? "YES" : "NO";
+    command.href = "javascript:;";
+    command.innerText = element.found ? "Code" : "Validate";
+    command.dataset.contract = address;
+    command.onclick = element.found ? window.toggleCode : window.toggleLocalValidate;
+    li.appendChild(command);
+
+    var etherscan = document.createElement('a');
+    etherscan.href = window.getNetworkElement('etherscanURL') + '/address/' + address;
+    etherscan.target = "_blank";
+    etherscan.innerText = "Etherscan";
+    etherscan.className = "ETHSCAN";
+    li.appendChild(etherscan);
+
+    li.dataset.found = element.found ? 'true' : 'false';
+
     return li;
+};
+
+window.toggleCode = async function toggleCode(e) {
+    e && (e.preventDefault && e.preventDefault(true), e.stopPropagation && e.stopPropagation(true));
+    var address = e.currentTarget.dataset.contract;
+    var li = e.currentTarget.parentNode;
+    var isToggle = li.getElementsByXPath('.//code').length > 0;
+    var oldCode = document.getElementsByXPath('//code');
+    oldCode = oldCode.length > 0 ? oldCode[0] : undefined;
+    oldCode && oldCode.parentElement.removeChild(oldCode);
+    if(isToggle) {
+        return;
+    }
+    var code = document.createElement('code');
+    var element = window.cache[address];
+    code.innerHTML = (await window.loadContent(element.sourceLocationId, element.sourceLocation)).split(' ').join('&nbsp;').split('\n').join('<br/>');
+    li.appendChild(code);
+};
+
+window.toggleLocalValidate = async function toggleLocalValidate(e) {
+    e && (e.preventDefault && e.preventDefault(true), e.stopPropagation && e.stopPropagation(true));
+    document.getElementById("validate").style.display = 'none' ;
+    var address = e.currentTarget.dataset.contract;
+    var li = e.currentTarget.parentNode;
+    var isToggle = li.getElementsByXPath('.//section[@class="VALIDATE"]').length > 0;
+    var oldSection = document.getElementsByXPath('//section[@class="VALIDATE"][not(@id="validate")]');
+    oldSection = oldSection.length > 0 ? oldSection[0] : undefined;
+    oldSection && oldSection.parentElement.removeChild(oldSection);
+    if(isToggle) {
+        return;
+    }
+    var section = document.createElement('section');
+    section.className = 'VALIDATE';
+    var element = window.cache[address];
+    section.innerHTML = '<input type="file" accept=".sol" onchange="onFileSelection(this)"/><input type="submit" data-address="$address" value="Submit" onclick="save(this)"/>'.split('$address').join(address);
+    li.appendChild(section);
 };
 
 window.tryFind = async function tryFind(element) {
@@ -522,8 +593,7 @@ window.tryFind = async function tryFind(element) {
     return compare !== undefined && compare !== null;
 };
 
-window.onFileSelection = function onFileSelection() {
-    var fileInput = document.getElementById('file');
+window.onFileSelection = function onFileSelection(fileInput) {
     var file = fileInput.files[0];
     var reader = new FileReader();
     reader.addEventListener("load", function () {
@@ -540,16 +610,24 @@ window.search = function search(value) {
     }, 900);
 };
 
-window.save = async function save() {
+window.save = async function save(button) {
     try {
-        var address = document.getElementById('address').value;
+        var address = undefined;
+        try {
+            address = button.dataset.address || document.getElementById('address').value;   
+        } catch(e) {
+        }
         if(!window.isEthereumAddress(address)) {
             return alert("Please insert a valid Ethereum address");
         }
         if(window.cache[address] && window.cache[address].found) {
             return alert("This contract has a valid source already");
         }
-        var file = document.getElementById('file').dataset.lastResult;
+        var file = undefined;
+        try {
+            file = button.parentNode.getElementsByXPath('.//input[@type="file"]')[0].dataset.lastResult;
+        } catch(e) {
+        }
         if(!file) {
             return alert("You must select a valid .sol file to continue");
         }
@@ -573,4 +651,12 @@ window.save = async function save() {
     } catch(e) {
         return alert(e.message || e);
     }
+};
+
+window.toggleGlobalValidate = function toggleGlobalValidate() {
+    var validate = document.getElementById('validate');
+    validate.style.display = validate.style.display !== 'none' ? 'none' : '';
+    var oldSection = document.getElementsByXPath('//section[@class="VALIDATE"][not(@id="validate")]');
+    oldSection = oldSection.length > 0 ? oldSection[0] : undefined;
+    oldSection && oldSection.parentElement.removeChild(oldSection);
 };
