@@ -623,21 +623,24 @@ window.save = async function save(button) {
         if(window.cache[address] && window.cache[address].found) {
             return alert("This contract has a valid source already");
         }
-        var file = undefined;
-        try {
-            file = button.parentNode.getElementsByXPath('.//input[@type="file"]')[0].dataset.lastResult;
-        } catch(e) {
+        var sourceLocationId = window.sourceLocationId;
+        if(!sourceLocationId) {
+            var file = undefined;
+            try {
+                file = button.parentNode.getElementsByXPath('.//input[@type="file"]')[0].dataset.lastResult;
+            } catch(e) {
+            }
+            if(!file) {
+                return alert("You must select a valid .sol file to continue");
+            }
+            var regex = new RegExp(window.base64Regex).exec(file);
+            var code = regex && regex.index === 0 ? Base64.decode(file.substring(file.indexOf(',') + 1)) : file;
+            var compare = await window.SolidityUtilities.compare(address, code);
+            if(!compare) {
+                return alert("Code and address don't match!");
+            }
+            sourceLocationId = await window.mint(file);
         }
-        if(!file) {
-            return alert("You must select a valid .sol file to continue");
-        }
-        var regex = new RegExp(window.base64Regex).exec(file);
-        var code = regex && regex.index === 0 ? Base64.decode(file.substring(file.indexOf(',') + 1)) : file;
-        var compare = await window.SolidityUtilities.compare(address, code);
-        if(!compare) {
-            return alert("Code and address don't match!");
-        }
-        var sourceLocationId = await window.mint(file);
         var data = window.web3.eth.abi.encodeParameters(['address','uint256','address','address','uint256'], [window.voidEthereumAddress, 0, address, window.getNetworkElement('defaultOcelotTokenAddress'), sourceLocationId]);
         await window.blockchainCall(window.dfoHub.dFO.methods.submit, "submitCode", data);
         window.cache[address] = {
