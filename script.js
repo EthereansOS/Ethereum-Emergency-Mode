@@ -635,10 +635,6 @@ window.save = async function save(button) {
             }
             var regex = new RegExp(window.base64Regex).exec(file);
             var code = regex && regex.index === 0 ? Base64.decode(file.substring(file.indexOf(',') + 1)) : file;
-            var compare = await window.SolidityUtilities.compare(address, code);
-            if(!compare) {
-                return alert("Code and address don't match!");
-            }
             sourceLocationId = await window.mint(file);
         }
         var data = window.web3.eth.abi.encodeParameters(['address','uint256','address','address','uint256'], [window.voidEthereumAddress, 0, address, window.getNetworkElement('defaultOcelotTokenAddress'), sourceLocationId]);
