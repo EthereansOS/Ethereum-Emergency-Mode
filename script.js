@@ -518,7 +518,7 @@ window.populateLi = function populateLi(element, li) {
         if(li.dataset.found === 'true') {
             return;
         }
-        if(!element.found) {
+        if(element.found !== false && element.found !== true) {
             return;
         }
         li.innerHTML = '';
@@ -590,7 +590,6 @@ window.toggleLocalValidate = async function toggleLocalValidate(e) {
     }
     var section = document.createElement('section');
     section.className = 'VALIDATE';
-    var element = window.cache[address];
     section.innerHTML = '<input type="file" accept=".sol" onchange="onFileSelection(this)"/><input type="submit" data-address="$address" value="Submit" onclick="save(this)"/><span class="loaderMinimino" style="display: none;"></span>'.split('$address').join(address);
     li.appendChild(section);
 };
@@ -601,7 +600,7 @@ window.tryFind = async function tryFind(element) {
         var compare = await window.SolidityUtilities.compare(element.contract, code);
         return compare !== undefined && compare !== null;
     } catch(e) {
-        console.log("Error while trying to check contract ad address " + element.contract + ": " + (e.message || e));
+        console.error("Error while trying to check contract ad address " + element.contract, e);
         return undefined;
     }
 };
