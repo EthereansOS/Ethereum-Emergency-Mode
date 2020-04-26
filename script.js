@@ -18,7 +18,7 @@ window.context = {
     "defaultOcelotTokenAddress": "0x9784b427ecb5275c9300ea34adef57923ab170af",
     "defaultOcelotTokenAddressRopsten": "0x6ae6cf934b2bd8c84d932aee75102ca2ef1bf2ce",
     "singleTokenLength" : 23000,
-    "dfoAddress": "0xc3BE549499f1e504c793a6c89371Bd7A98229500",
+    "dfoAddress": "0xC35c2523c342eb227976bE6e61D6fc354A68999A",
     "dfoAddressRopsten": "0x29A444a44e1a8b286FbB3903d8F5D9A5c54dd2fc",
     "ensAddress": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
     "deploySearchStart": 9779603,
