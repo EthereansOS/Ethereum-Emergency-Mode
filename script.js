@@ -4,7 +4,7 @@ window.descriptionWordLimit = 300;
 window.urlRegex = /(https?:\/\/[^\s]+)/gs;
 window.solidityImportRule = /import( )*"(\d+)"( )*;/gs;
 window.pragmaSolidityRule = /pragma( )*solidity( )*(\^|>)\d+.\d+.\d+;/gs;
-window.base64Regex = /data:(\w+)\/(\w+);base64,/gs;
+window.base64Regex = /data:([\S]+)\/([\S]+);base64,/gs;
 
 window.Base64={_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",encode:function(e){var t="";var n,r,i,s,o,u,a;var f=0;e=Base64._utf8_encode(e);while(f<e.length){n=e.charCodeAt(f++);r=e.charCodeAt(f++);i=e.charCodeAt(f++);s=n>>2;o=(n&3)<<4|r>>4;u=(r&15)<<2|i>>6;a=i&63;if(isNaN(r)){u=a=64}else if(isNaN(i)){a=64}t=t+this._keyStr.charAt(s)+this._keyStr.charAt(o)+this._keyStr.charAt(u)+this._keyStr.charAt(a)}return t},decode:function(e){var t="";var n,r,i;var s,o,u,a;var f=0;e=e.replace(/[^A-Za-z0-9\+\/\=]/g,"");while(f<e.length){s=this._keyStr.indexOf(e.charAt(f++));o=this._keyStr.indexOf(e.charAt(f++));u=this._keyStr.indexOf(e.charAt(f++));a=this._keyStr.indexOf(e.charAt(f++));n=s<<2|o>>4;r=(o&15)<<4|u>>2;i=(u&3)<<6|a;t=t+String.fromCharCode(n);if(u!=64){t=t+String.fromCharCode(r)}if(a!=64){t=t+String.fromCharCode(i)}}t=Base64._utf8_decode(t);return t},_utf8_encode:function(e){e=e.replace(/\r\n/g,"\n");var t="";for(var n=0;n<e.length;n++){var r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r)}else if(r>127&&r<2048){t+=String.fromCharCode(r>>6|192);t+=String.fromCharCode(r&63|128)}else{t+=String.fromCharCode(r>>12|224);t+=String.fromCharCode(r>>6&63|128);t+=String.fromCharCode(r&63|128)}}return t},_utf8_decode:function(e){var t="";var n=0;var r=c1=c2=0;while(n<e.length){r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r);n++}else if(r>191&&r<224){c2=e.charCodeAt(n+1);t+=String.fromCharCode((r&31)<<6|c2&63);n+=2}else{c2=e.charCodeAt(n+1);c3=e.charCodeAt(n+2);t+=String.fromCharCode((r&15)<<12|(c2&63)<<6|c3&63);n+=3}}return t}};
 
@@ -524,20 +524,27 @@ window.populateLi = function populateLi(element, li) {
     }
 
     var icon = document.createElement('span');
-    icon.innerHTML = element.found ? '&#9989;' : '&#127384;';
+    icon.innerHTML = (element.found === undefined || element.found === null) ? "&nbsp;" : element.found ? '&#9989;' : '&#127384;';
     li.appendChild(icon);
 
     var contractName = document.createElement('p');
     contractName.innerText = address;
     li.appendChild(contractName);
 
-    var command = document.createElement('a');
-    command.className = element.found ? "YES" : "NO";
-    command.href = "javascript:;";
-    command.innerText = element.found ? "Code" : "Validate";
-    command.dataset.contract = address;
-    command.onclick = element.found ? window.toggleCode : window.toggleLocalValidate;
-    li.appendChild(command);
+    if(element.found === undefined || element.found === null) {
+        var loader = document.createElement('span');
+        loader.innerHTML = "&nbsp;"
+        loader.className = "loaderMinimino";
+        li.appendChild(loader);
+    } else {
+        var command = document.createElement('a');
+        command.className = element.found ? "YES" : "NO";
+        command.href = "javascript:;";
+        command.innerText = element.found ? "Code" : "Validate";
+        command.dataset.contract = address;
+        command.onclick = element.found ? window.toggleCode : window.toggleLocalValidate;
+        li.appendChild(command);
+    }
 
     var etherscan = document.createElement('a');
     etherscan.href = window.getNetworkElement('etherscanURL') + '/address/' + address;
@@ -583,7 +590,7 @@ window.toggleLocalValidate = async function toggleLocalValidate(e) {
     var section = document.createElement('section');
     section.className = 'VALIDATE';
     var element = window.cache[address];
-    section.innerHTML = '<input type="file" accept=".sol" onchange="onFileSelection(this)"/><input type="submit" data-address="$address" value="Submit" onclick="save(this)"/>'.split('$address').join(address);
+    section.innerHTML = '<input type="file" accept=".sol" onchange="onFileSelection(this)"/><input type="submit" data-address="$address" value="Submit" onclick="save(this)"/><span class="loaderMinimino" style="display: none;"></span>'.split('$address').join(address);
     li.appendChild(section);
 };
 
@@ -611,6 +618,9 @@ window.search = function search(value) {
 };
 
 window.save = async function save(button) {
+    var loader = button.parentElement.getElementsByXPath(".//span[@class='loaderMinimino']")[0];
+    button.style.display = 'none';
+    loader.style.display = '';
     try {
         var address = undefined;
         try {
@@ -618,10 +628,10 @@ window.save = async function save(button) {
         } catch(e) {
         }
         if(!window.isEthereumAddress(address)) {
-            return alert("Please insert a valid Ethereum address");
+            throw "Please insert a valid Ethereum address";
         }
         if(window.cache[address] && window.cache[address].found) {
-            return alert("This contract has a valid source already");
+            throw "This contract has a valid source already";
         }
         var sourceLocationId = window.sourceLocationId;
         if(!sourceLocationId) {
@@ -631,7 +641,7 @@ window.save = async function save(button) {
             } catch(e) {
             }
             if(!file) {
-                return alert("You must select a valid .sol file to continue");
+                throw "You must select a valid .sol file to continue";
             }
             var regex = new RegExp(window.base64Regex).exec(file);
             var code = regex && regex.index === 0 ? Base64.decode(file.substring(file.indexOf(',') + 1)) : file;
@@ -648,7 +658,9 @@ window.save = async function save(button) {
         window.saveCache();
         window.loadContract(window.cache[address]);
     } catch(e) {
-        return alert(e.message || e);
+        button.style.display = '';
+        loader.style.display = 'none';
+        return setTimeout(() => alert(e.message || e));
     }
 };
 
@@ -656,6 +668,8 @@ window.toggleGlobalValidate = function toggleGlobalValidate() {
     var validate = document.getElementById('validate');
     validate.style.display = validate.style.display !== 'none' ? 'none' : '';
     var oldSection = document.getElementsByXPath('//section[@class="VALIDATE"][not(@id="validate")]');
+    validate.getElementsByXPath('.//input[@type="submit"]')[0].style.display = '';
+    validate.getElementsByXPath('.//span[@class="loaderMinimino"]')[0].style.display = 'none';
     oldSection = oldSection.length > 0 ? oldSection[0] : undefined;
     oldSection && oldSection.parentElement.removeChild(oldSection);
 };
