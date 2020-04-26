@@ -496,8 +496,9 @@ window.loadContract = async function loadContract(event) {
     var oldFound = element.found;
     !element.sourceLocation && event.data && (element.sourceLocation = event.data[2]);
     !element.sourceLocationId && event.data && (element.sourceLocationId = event.data[3]);
-    !element.found && element.sourceLocation && element.sourceLocationId && (element.found = await window.tryFind(element));
+    !element.found && element.sourceLocation && element.sourceLocationId && (element.found = (await window.tryFind(element)) ? true : false);
     if(!element.found && !event.contract && !event.data) {
+        window.populateLi(element);
         return window.getEvents(event).then(events => events.forEach(window.loadContract));
     }
     (element.found !== oldFound || !window.cache[address]) && (window.cache[address] = element) && window.saveCache();
@@ -595,9 +596,14 @@ window.toggleLocalValidate = async function toggleLocalValidate(e) {
 };
 
 window.tryFind = async function tryFind(element) {
-    var code = await window.loadContent(element.sourceLocationId, element.sourceLocation);
-    var compare = await window.SolidityUtilities.compare(element.contract, code);
-    return compare !== undefined && compare !== null;
+    try {
+        var code = await window.loadContent(element.sourceLocationId, element.sourceLocation);
+        var compare = await window.SolidityUtilities.compare(element.contract, code);
+        return compare !== undefined && compare !== null;
+    } catch(e) {
+        console.log("Error while trying to check contract ad address " + element.contract + ": " + (e.message || e));
+        return undefined;
+    }
 };
 
 window.onFileSelection = function onFileSelection(fileInput) {
