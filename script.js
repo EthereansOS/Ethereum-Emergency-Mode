@@ -42,10 +42,7 @@ HTMLDocument.prototype.getElementsByXPath = HTMLElement.prototype.getElementsByX
 }
 
 window.Main = async function Main() {
-    if (!await window.blockchainSetup()) {
-        return;
-    }
-    window.onEthereumUpdate();
+    window.onEthereumUpdate(0);
 };
 
 window.newContract = function newContract(abi, address) {
@@ -56,20 +53,6 @@ window.newContract = function newContract(abi, address) {
     key = address.toLowerCase();
     contracts[key] = contracts[key] || new window.web3.eth.Contract(abi, address === window.voidEthereumAddress ? undefined : address);
     return contracts[key];
-};
-
-window.blockchainSetup = async function blockchainSetup() {
-    if (typeof window.ethereum === 'undefined') {
-        return;
-    }
-    try {
-        window.ethereum.autoRefreshOnNetworkChange && (window.ethereum.autoRefreshOnNetworkChange = false);
-        window.ethereum.on && window.ethereum.on('networkChanged', window.onEthereumUpdate);
-        window.ethereum.on && window.ethereum.on('accountsChanged', window.onEthereumUpdate);
-        return window.onEthereumUpdate(0);
-    } catch (e) {
-        throw 'An error occurred while trying to setup the Blockchain Connection: ' + (e.message || e + '.');
-    }
 };
 
 window.loadDFO = async function loadDFO(address, allAddresses) {
@@ -97,10 +80,15 @@ window.onEthereumUpdate = function onEthereumUpdate(millis) {
     return new Promise(function(ok) {
         setTimeout(async function() {
             var update = false;
-            if (!window.networkId || window.networkId !== await window.web3.eth.net.getId()) {
+            if (!window.networkId || window.networkId !== parseInt(window.ethereum.chainId)) {
                 delete window.contracts;
-                window.web3 = new window.Web3Browser(window.web3.currentProvider);
-                window.web3.currentProvider.setMaxListeners(0);
+                window.ethereum && window.ethereum.autoRefreshOnNetworkChange && (window.ethereum.autoRefreshOnNetworkChange = false);
+                window.ethereum && window.ethereum.on && window.ethereum.on('accountsChanged', window.onEthereumUpdate);
+                window.ethereum && window.ethereum.on && window.ethereum.on('chainChanged', window.onEthereumUpdate);
+                window.web3 = new window.Web3Browser(window.ethereum);
+                window.web3.currentProvider.setMaxListeners && window.web3.currentProvider.setMaxListeners(0);
+                window.web3.eth.transactionBlockTimeout = 999999999;
+                window.web3.eth.transactionPollingTimeout = new Date().getTime();
                 window.networkId = await window.web3.eth.net.getId();
                 var network = window.context.ethereumNetwork[window.networkId];
                 if (network === undefined || network === null) {
@@ -113,9 +101,14 @@ window.onEthereumUpdate = function onEthereumUpdate(millis) {
                 };
                 window.loadFunctionalities(window.dfoHub);
                 window.loadContracts();
+                update = true;
             }
+            delete window.walletAddress;
             try {
                 window.walletAddress = (await window.web3.eth.getAccounts())[0];
+            } catch (e) {}
+            try {
+                window.walletAvatar = window.makeBlockie(window.walletAddress);
             } catch (e) {}
             return ok(window.web3);
         }, !isNaN(millis) ? millis : 550);
